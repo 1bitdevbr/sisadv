@@ -1,0 +1,136 @@
+/* INICIO DA ESTRUTURA DO SISTEMA */
+/* font-weight especifica o peso ou a intensidade da fonte (ex.: negrito)*/
+/* letter-spacing específica o comportamento do espaçamento entre caracteres de texto*/
+
+.header one {
+	float: left;
+}
+
+.header two {
+	float: right;
+}
+
+.header three {
+	float: right;
+}
+
+.data {
+	width: 100%;
+	font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif; font-size: 16px; font-weight: normal; letter-spacing: .1rem; text-align: center; color: #FDBD00;
+}
+
+.data a:link {
+	color: #e1ffff;
+}
+
+.data a:visited {
+	color: #FDBD00;
+}
+
+.data a:hover {
+	color: #e1ffff;
+	text-decoration: none;
+}
+
+.data a:active {
+	color: #e1ffff;
+}
+
+tbody a {
+	font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
+}
+
+.extrato {
+	background-color: #000;
+	color: #e1ffff;
+	font-family: Calibri;
+	font-size: 16px;
+	font-weight: normal;
+	letter-spacing: .1rem;
+	justify-content: center;
+	align-items: center;
+	align-content: center;
+}
+/*
+.faixa_mes {
+	background-color: #F1F1F1;
+	text-align: center;
+	width: auto;
+	height: auto;
+	padding: 5px 5px 5px 5px;
+	font-family: Arial, Helvetica, sans-serif;
+	font-size: 16px;
+	font-weight: normal;
+	letter-spacing: .1rem;
+	color: #2D2D2D;
+	border: 1px solid #DFDFDF;
+	border-radius: 5px 5px 5px 5px;
+	display: flex;
+	flex-direction: row;
+	justify-content: center;
+	align-items: center;
+	align-content: center;
+	opacity: 80%;
+}
+*/
+.fx_mes table {
+	border: 1px solid #C8C8C8; width:auto; height:100%; justify-content:center; display:flex; align-items:center; vertical-align:middle;
+	background-color: #F1F1F1;
+	text-align: center;
+	width: auto; height: auto;
+	padding: 5px 5px 5px 5px;
+	font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif; font-size: 1.0em; font-weight: normal; color: #2D2D2D;
+	letter-spacing: .1rem;
+	border-radius: 100px 100px 100px 100px;
+	flex-direction: row;
+	opacity: 80%;
+}
+
+.faixa_resumo {
+	border: 0px solid #DFDFDF; width:auto; height:100%; justify-content:center; display:flex; align-items:center; vertical-align:middle;
+	background-color: #FFF;
+	font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif; font-size: 1.0em; font-weight: normal; color: #2D2D2D;
+	letter-spacing: .1rem;
+	border-radius: 5px 5px 5px 5px;
+	padding: 5px 5px 5px 5px;
+	opacity: 80%;
+}
+
+.faixa_resumo h2 {
+	color:#A60202;
+	font-size: 2.2em;
+	font-family: Arial, Helvetica, sans-serif;
+	text-transform: uppercase;
+	font-weight: bold;
+	letter-spacing: .2rem;
+}
+
+.entradasMext {
+	border-collapse: collapse;
+	border: 1px solid #CECECE;
+	background-color: #D3FFE2;
+	width: 50%;
+	padding: 5px 5px 5px 5px;
+}
+
+.entradasMint {
+	border-collapse: collapse;
+	background-color: #EFEFEF;
+	padding: 5px 5px 5px 5px;
+	border-radius: 20px 20px 20px 20px;
+}
+
+.balancoGext {
+	border-collapse: collapse;
+	border: 1px solid #CECECE;
+	background-color: #E6E3EB;
+	width: 50%;
+	padding: 5px 5px 5px 5px;
+}
+
+.balancoGint {
+	border-collapse: collapse;
+	background-color: #EFEFEF;
+	padding: 5px 5px 5px 5px;
+	border-radius: 20px 20px 20px 20px;
+}

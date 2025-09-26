@@ -1,0 +1,496 @@
+<?php
+  if( !isset( $_SESSION ) ) session_start();
+  $required_level = 1;
+  require_once(__DIR__ . '/../access/level.php');
+  require_once(__DIR__ . '/../access/conn.php');
+  require_once(__DIR__ . '/../config.php');
+  require_once(__DIR__ . '/../dist/func/functions.php');
+
+  // ======================================================================================= //
+  // RECEBENDO DADOS VIA POST
+  // ======================================================================================= //
+  if( ( $_SERVER[ "REQUEST_METHOD" ] == "POST" ) && ( isset( $_POST[ 'ACTION' ] ) ) && ( $_POST[ 'ACTION' ] == 'CONTRATO' ) ) {
+    $ID = $_POST[ 'ID' ];
+    $ADV_ADVOGADOS = $_POST[ 'ADV_ADVOGADOS' ];
+    $DCO_OBJETO = $_POST[ 'DCO_OBJETO' ];
+    $PROCEDIMENTO = corrigir( $_POST[ 'PROCEDIMENTO' ] );
+    $DCO_OBG_ADV = $_POST[ 'DCO_OBG_ADV' ];
+    $DCO_DESPESAS = $_POST[ 'DCO_DESPESAS' ];
+    $DCO_OBG_CLIENTE = $_POST[ 'DCO_OBG_CLIENTE' ];
+    $DCO_HON_ADV = $_POST[ 'DCO_HON_ADV' ];
+    $DCO_MULTA_DESC = $_POST[ 'DCO_MULTA_DESC' ];
+    $DCO_DESISTENCIA = $_POST[ 'DCO_DESISTENCIA' ];
+    $DCO_ACORDO = $_POST[ 'DCO_ACORDO' ];
+    $DCO_COMUNICACOES = $_POST[ 'DCO_COMUNICACOES' ];
+    $DCO_DADOS = $_POST[ 'DCO_DADOS' ];
+    $DCO_REPRESENTACAO = $_POST[ 'DCO_REPRESENTACAO' ];
+    $DCO_COBRANCA = $_POST[ 'DCO_COBRANCA' ];
+    $DCO_PROTESTO = $_POST[ 'DCO_PROTESTO' ];
+    $DCO_PENHORA = $_POST[ 'DCO_PENHORA' ];
+
+    // mysqli_query( $CONN, " UPDATE DOC_PROCURACAO SET DPR_PODERES = '$ADV_PODERES' " );
+    // echo mysqli_error( $CONN );
+
+    $SQL = mysqli_query( $CONN, " SELECT C.*, P.PAS_ID, P.PAS_NOME
+                                    FROM CLI_CLIENTES C
+                                    JOIN STA_STATUS S ON C.CLI_FK_STATUS = S.STA_ID
+                                    JOIN PAS_PROC_PASTA P ON C.CLI_FK_PASTA = P.PAS_ID
+                                   WHERE C.CLI_ID = '$ID'
+                                ORDER BY C.CLI_ID DESC " );
+    $DADOS = mysqli_fetch_array( $SQL );
+  }
+?>
+
+<!-- Content Wrapper. Contains page content -->
+<div class="content-wrapper"><!-- Content Header (Page header) -->
+
+	<!-- Main content -->
+	<section class="content" style="max-width: 90%;">
+
+        <!--// INÍCIO DO DOCUMENTO //-->
+        <div class="invoice p-3 mt-3 mb-3">
+
+            <div class="PDF container-fluid contratobg" style="width: 98%; margin-right: 2px;">
+
+                <?php
+                    $SQL = mysqli_query( $CONN1, " SELECT C.* FROM SYS_USERS U JOIN SYS_CLIENTS C ON C.CLI_ID = U.USR_FK_CLIENT WHERE U.USR_ID = '$USERS' ");
+                    $R = mysqli_fetch_array( $SQL );
+                    $CLIENT_CITY = $R[ 'CLI_CITY' ];
+                    if( empty( $R[ 'CLI_LOGO' ] ) ) {
+                    $LOGO = 'dist/img/logo/logo.png';
+                    } else {
+                    $LOGO = 'dist/img/logo/' . $R[ 'CLI_LOGO' ] . '';
+                    }
+                ?>
+
+                <!-- // ====================================================================================== //
+                // CABEÇALHO
+                // ======================================================================================= // -->
+                <div class="row">
+                    <div class="col-auto">
+                    <span><img class="logoCabecalho img-circle" src="<?= $LOGO; ?>"/></span>
+                    </div>
+                    <div class="cabecalho col justify-content-left align-items-left">
+                    <span class="titulo"><?= $R[ 'CLI_OFFICE' ]; ?></span><br />
+                    <span><i class="fas fa-map-marker"></i>&nbsp;<?= $R[ 'CLI_ADDRESS' ]; ?>, <?= $R[ 'CLI_NUMBER' ]; ?> - <?= $R[ 'CLI_NEIGHBORHOOD' ]; ?></span><br />
+                    <span><i class="fas fa-map"></i>&nbsp;<?= $R[ 'CLI_CITY' ]; ?>/<?= $R[ 'CLI_STATE' ]; ?> -  <i class="fas fa-envelope"></i>&nbsp;<?php if( !empty( $R[ 'CLI_ZIPCODE' ] ) ) { echo mask( $R[ 'CLI_ZIPCODE' ], '##.###-###' ); } else { echo ''; }  ?></span><br />
+                    <span>
+                        <?php if( !empty( $R[ 'CLI_PHONE' ] ) ) { echo '<i class="fas fa-phone"></i>&nbsp;' . mask( $R[ 'CLI_PHONE' ], '## | #####-####' ) . ' - '; } else { echo ''; }  ?><?php if( !empty( $R[ 'CLI_CELLPHONE' ] ) ) { echo '<i class="fas fa-mobile"></i>&nbsp;' . mask( $R[ 'CLI_CELLPHONE' ], '## | #####-####' ); } else { echo ''; }  ?>
+                    </span><br />
+                    <span class="network">
+                        <?php if( !empty( $R[ 'CLI_SITE' ] ) ) { echo '<i class="fas fa-globe"></i>&nbsp;' . strtolower($R[ 'CLI_SITE' ]); } else { echo ''; }  ?> <br /> <?php if( !empty( $R[ 'CLI_EMAIL' ] ) ) { echo '<i class="fas fa-envelope"></i>&nbsp;' . strtolower($R[ 'CLI_EMAIL' ]); } else { echo ''; }  ?>
+                    </span>
+                    </div>
+                </div>
+
+                <hr style="border-top: 1px solid rgb( 55, 67, 81 );" />
+
+                <!--// LAYOUT DO DOCUMENTO //-->
+
+                <!-- // ====================================================================================== //
+                // 0. TÍTULO DO DOCUMENTO
+                // ======================================================================================= // -->
+                <div class="cabecalho mt-2 mb-2" style="text-align: center;">
+                    <span class="titulo">CONTRATO DE PRESTAÇÃO DE SERVIÇOS ADVOCATÍCIOS</span>
+                </div>
+
+                <p class="texto">Pelo presente Contrato de Prestação de Serviços Advocatícios que entre si fazem:</p>
+
+                <!-- // ====================================================================================== //
+                // 1. DAS PARTES
+                // ======================================================================================= // -->
+                <span class="topico mt-2">01| DAS PARTES</span>
+                <hr class="mt-0 mb-0" style="border-top: 1px solid rgb( 55, 67, 81 );" />
+
+                <div class="texto row mt-3">
+                    <div class="col-sm-12">
+                        <span class="topico mt-3">CONTRATANTE:</span>
+                        <p>
+                            <span style="font-weight: 700;"><?= $DADOS[ 'CLI_NOME' ]; ?></span>,
+                            <?php if( !empty( $DADOS[ 'CLI_NACIONALIDADE' ] ) && $DADOS[ 'CLI_NACIONALIDADE' ] != '' ) { echo strtolower( $DADOS[ 'CLI_NACIONALIDADE' ] ) . ','; } else { echo ''; } ?>
+                            <?php if( !empty( $DADOS[ 'CLI_PROFISSAO' ] ) && $DADOS[ 'CLI_PROFISSAO' ] != '' ) { echo strtolower( $DADOS[ 'CLI_PROFISSAO' ] ) . ','; } else { echo ''; } ?>
+                            <?php if( !empty( $DADOS[ 'CLI_EST_CIVIL' ] ) && $DADOS[ 'CLI_EST_CIVIL' ] != 'SELECIONE...' ) { echo strtolower( $DADOS[ 'CLI_EST_CIVIL' ] ) . ','; } else { echo ''; } ?>
+                            inscrito/a
+                            <?php
+                            if( !empty( $DADOS[ 'CLI_ORG_EMISSOR' ] ) && !empty( $DADOS[ 'CLI_RG' ] ) ) {
+                                echo 'na Cédula de Identidade RG/'.$DADOS[ 'CLI_ORG_EMISSOR' ].', sob o nº '.mask( $DADOS[ 'CLI_RG' ], '##.###.###-#' ).', e ';
+                            } elseif( empty( $DADOS[ 'CLI_ORG_EMISSOR' ] ) && !empty( $DADOS[ 'CLI_RG' ] ) ) {
+                                echo 'na Cédula de Identidade RG sob o nº '.mask( $DADOS[ 'CLI_RG' ], '##.###.###-#' ).', e ';
+                            } else {
+                                echo '';
+                            }
+                            ?>
+                            no CPF/MF sob o nº <?php $CLI_CPF = $DADOS[ 'CLI_CPF' ]; echo mask( $CLI_CPF, '###.###.###-##' ); ?>,
+                            <?php if( !empty( $DADOS[ 'CLI_EMAIL' ] ) ) { echo 'e-mail: ' . $DADOS[ 'CLI_EMAIL' ] . ','; } else { echo 'e-mail: não informado, '; } ?>
+                            residente e domiciliado/a <?php if( !empty( $DADOS[ 'CLI_ENDERECO' ] ) ) { echo 'na ' . safe_ucwords($DADOS[ 'CLI_ENDERECO' ]) . ','; } else { echo 'na <b>não informado, </b>'; } ?>
+                            <?php if( !empty( $DADOS[ 'CLI_NUMERO' ] ) ) { echo 'nº ' . $DADOS[ 'CLI_NUMERO' ] . ','; } else { echo 'nº <b>não informado, </b>'; } ?>
+                            <?php if( !empty( $DADOS[ 'CLI_COMPLEMENTO' ] ) ) { echo safe_ucwords($DADOS[ 'CLI_COMPLEMENTO' ]) . ','; } else { echo ''; } ?>
+                            <?php if( !empty( $DADOS[ 'CLI_BAIRRO' ] ) ) { echo safe_ucwords($DADOS[ 'CLI_BAIRRO' ]) . ','; } else { echo ''; } ?>
+                            na cidade de <?php if( !empty( $DADOS[ 'CLI_CIDADE' ] ) ) { echo safe_ucwords($DADOS[ 'CLI_CIDADE' ]); } else { echo ''; } ?>
+                            <?php if( !empty( $DADOS[ 'CLI_UF' ] ) ) { echo '/'. $DADOS[ 'CLI_UF' ] . ','; } else { echo ''; } ?>
+                            <?php if( !empty( $DADOS[ 'CLI_CEP' ] ) ) { echo 'CEP nº ' . mask( $DADOS[ 'CLI_CEP' ], '##.###-###' ) . ','; } else { echo ''; } ?>
+                            doravante designado simplesmente por <b>CLIENTE</b>, e,
+                        </p>
+                        <span class="topico mt-2">CONTRATADO(S):</span>
+                        <p>
+                            <?php
+                            if( isset( $_POST[ 'ADV_ADVOGADOS' ] ) ) {
+
+                                foreach( $ADV_ADVOGADOS as $ID_FORM ) {
+                                $QR = mysqli_query( $CONN, "SELECT ADV.*, UFE.UFE_SIGLA, EST.EST_NOME
+                                                                FROM ADV_ADVOGADOS ADV
+                                                                JOIN EST_CIVIL EST ON EST.EST_ID = ADV.ADV_FK_EST_CIVIL
+                                                                JOIN UFE_ESTADOS UFE ON UFE_ID = ADV.ADV_FK_OAB_UF AND ADV_FK_UF
+                                                            WHERE ADV.ADV_ID = '$ID_FORM' " );
+
+                                $QR1 = mysqli_fetch_array( $QR );
+
+                                if( !empty( $QR1[ 'ADV_SOCIEDADE' ] ) ) { ?>
+                                    <?php if( !empty( $QR1[ 'ADV_SOCIEDADE' ] ) ) { echo '<span style="font-weight: 700;">' . $QR1[ 'ADV_SOCIEDADE' ] . '</span>,'; } else { echo ''; } ?>
+                                    <?php if( !empty( $QR1[ 'ADV_CNPJ' ] ) ) { echo 'inscrita no CNPJ sob o nº ' . mask( $QR1[ 'ADV_CNPJ' ], '##.###.###/####-##' ) . ','; } else { echo ''; } ?>
+                                    <?php if( !empty( $QR1[ 'UFE_SIGLA' ] ) ) { echo 'com registro na OAB/' . $QR1[ 'UFE_SIGLA' ] . ','; } else { echo ''; } ?>
+                                    <?php if( !empty( $QR1[ 'ADV_NR_OAB_SOCIEDADE' ] ) ) { echo 'sob nº ' . $QR1[ 'ADV_NR_OAB_SOCIEDADE' ] . ','; } else { echo ''; } ?>
+                                    <?php if( !empty( $QR1[ 'ADV_CELULAR' ] ) ) { echo 'celular nº ' . mask( $QR1[ 'ADV_CELULAR' ], '(##) #####-####' ) . ','; } else { echo ''; } ?>
+                                    <?php if( !empty( $QR1[ 'ADV_EMAIL' ] ) ) { echo 'e-mail: ' . strtolower( $QR1[ 'ADV_EMAIL' ] ) . ','; } else { echo ''; } ?>
+                                    <?php if( !empty( $QR1[ 'ADV_ENDERECO' ] ) ) { echo 'estabelecia à ' . safe_ucwords($QR1[ 'ADV_ENDERECO' ]) . ','; } else { echo ''; } ?>
+                                    <?php if( !empty( $QR1[ 'ADV_NR' ] ) ) { echo 'nº ' . $QR1[ 'ADV_NR' ] . ','; } else { echo ''; } ?>
+                                    <?php if( !empty( $QR1[ 'ADV_COMPLEMENTO' ] ) ) { echo safe_ucwords($QR1[ 'ADV_COMPLEMENTO' ]) . ','; } else { echo ''; } ?>
+                                    <?php if( !empty( $QR1[ 'ADV_BAIRRO' ] ) ) { echo safe_ucwords($QR1[ 'ADV_BAIRRO' ]) . ','; } else { echo ''; } ?>
+                                    <?php if( !empty( $QR1[ 'ADV_CIDADE' ] ) ) { echo 'na cidade de ' . safe_ucwords($QR1[ 'ADV_CIDADE' ]); } else { echo ''; } ?>
+                                    <?php if( !empty( $QR1[ 'UFE_SIGLA' ] ) ) { echo '/'. $QR1[ 'UFE_SIGLA' ] . ','; } else { echo ''; } ?>
+                                    <?php if( !empty( $QR1[ 'ADV_CEP' ] ) ) { echo 'CEP nº ' . mask( $QR1[ 'ADV_CEP' ], '##.###-###' ) . '.'; } else { echo ''; } ?>
+                                    <?php if( !empty( $QR1[ 'ADV_NOME' ] ) ) { echo 'neste ato, representado/a por <span style="font-weight: 700;">' . $QR1[ 'ADV_NOME' ] . '</span>,'; } else { echo ''; } ?>
+                                    <?php if( !empty( $QR1[ 'ADV_NACIONALIDADE' ] ) ) { echo strtolower( $QR1[ 'ADV_NACIONALIDADE' ] ) . ','; } else { echo ''; } ?>
+                                    <?php if( !empty( $QR1[ 'EST_NOME' ] ) ) { echo strtolower( $QR1[ 'EST_NOME' ] ) . ','; } else { echo ''; } ?>
+                                    <?php if( !empty( $QR1[ 'UFE_SIGLA' ] ) ) { echo 'inscrito/a na OAB/' . $QR1[ 'UFE_SIGLA' ] . ','; } else { echo ''; } ?>
+                                    <?php if( !empty( $QR1[ 'ADV_NR_OAB' ] ) ) { echo 'sob nº ' . $QR1[ 'ADV_NR_OAB' ] . '.&nbsp;'; } else { echo ''; } ?>
+                            <?php } else { ?>
+                                    <?php if( !empty( $QR1[ 'ADV_NOME' ] ) ) { echo '<span style="font-weight: 700;">' . $QR1[ 'ADV_NOME' ] . '</span>,'; } else { echo ''; } ?>
+                                    <?php if( !empty( $QR1[ 'ADV_NACIONALIDADE' ] ) ) { echo strtolower( $QR1[ 'ADV_NACIONALIDADE' ] ) . ','; } else { echo ''; } ?>
+                                    <?php if( !empty( $QR1[ 'EST_NOME' ] ) ) { echo strtolower( $QR1[ 'EST_NOME' ] ) . ','; } else { echo ''; } ?>
+                                    <?php if( !empty( $QR1[ 'UFE_SIGLA' ] ) ) { echo 'inscrito/a na OAB/' . $QR1[ 'UFE_SIGLA' ]; } else { echo ''; } ?>
+                                    <?php if( !empty( $QR1[ 'ADV_NR_OAB' ] ) ) { echo 'sob nº ' . $QR1[ 'ADV_NR_OAB' ] . ','; } else { echo ''; } ?>
+                                    <?php if( !empty( $QR1[ 'ADV_CELULAR' ] ) ) { echo 'celular nº ' . mask( $QR1[ 'ADV_CELULAR' ], '(##) #####-####' ) . ','; } else { echo ''; } ?>
+                                    <?php if( !empty( $QR1[ 'ADV_EMAIL' ] ) ) { echo 'e-mail: ' . strtolower( $QR1[ 'ADV_EMAIL' ] ) . ','; } else { echo ''; } ?>
+                                    <?php if( !empty( $QR1[ 'ADV_ENDERECO' ] ) ) { echo 'com escritório localizado à ' . safe_ucwords($QR1[ 'ADV_ENDERECO' ]) . ','; } else { echo ''; } ?>
+                                    <?php if( !empty( $QR1[ 'ADV_NR' ] ) ) { echo 'nº ' . $QR1[ 'ADV_NR' ] . ','; } else { echo ''; } ?>
+                                    <?php if( !empty( $QR1[ 'ADV_COMPLEMENTO' ] ) ) { echo safe_ucwords($QR1[ 'ADV_COMPLEMENTO' ]) . ','; } else { echo ''; } ?>
+                                    <?php if( !empty( $QR1[ 'ADV_BAIRRO' ] ) ) { echo safe_ucwords($QR1[ 'ADV_BAIRRO' ]) . ','; } else { echo ''; } ?>
+                                    <?php if( !empty( $QR1[ 'ADV_CIDADE' ] ) ) { echo 'na cidade de ' . safe_ucwords($QR1[ 'ADV_CIDADE' ]); } else { echo ''; } ?>
+                                    <?php if( !empty( $QR1[ 'UFE_SIGLA' ] ) ) { echo '/'. $QR1[ 'UFE_SIGLA' ] . ','; } else { echo ''; } ?>
+                                    <?php if( !empty( $QR1[ 'ADV_CEP' ] ) ) { echo 'CEP nº ' . mask( $QR1[ 'ADV_CEP' ], '##.###-###' ) . ','; } else { echo ''; } ?>
+                                    doravante designados de <b>ADVOGADOS</b>, podendo assinar juntos ou separadamente, têm entre si, justos e contratados o que segue:
+                            <?php }
+                                }
+                            }
+                            ?>
+                        </p>
+                    </div>
+                </div><!-- /.row -->
+
+                <!-- // ====================================================================================== //
+                // 02. DO OBJETO
+                // ======================================================================================= // -->
+                <span class="topico">02| DO OBJETO</span>
+                <hr class="mt-0 mb-0" style="border-top: 1px solid rgb( 55, 67, 81 );" />
+
+                <div class="texto row mt-3">
+                    <div class="col-sm-12">
+                        <p><?= $DCO_OBJETO; ?> <b><?= $PROCEDIMENTO; ?></b>.</p>
+                    </div>
+                </div><!-- /.row -->
+
+                <!-- // ====================================================================================== //
+                // 03. DAS OBRIGAÇÕES DOS ADVOGADOS
+                // ======================================================================================= // -->
+                <span class="topico">03| DAS OBRIGAÇÕES DOS ADVOGADOS</span>
+                <hr class="mt-0 mb-0" style="border-top: 1px solid rgb( 55, 67, 81 );" />
+
+                <div class="texto row mt-3">
+                    <div class="col-sm-12">
+                        <p><?= $DCO_OBG_ADV; ?></p>
+                    </div>
+                </div><!-- /.row -->
+
+                <!-- // ====================================================================================== //
+                // 04.	DAS DESPESAS
+                // ======================================================================================= // -->
+                <span class="topico">04| DAS DESPESAS</span>
+                <hr class="mt-0 mb-0" style="border-top: 1px solid rgb( 55, 67, 81 );" />
+
+                <div class="texto row mt-3">
+                    <div class="col-sm-12">
+                        <p><?= $DCO_DESPESAS; ?></p>
+                    </div>
+                </div><!-- /.row -->
+
+                <!-- // ====================================================================================== //
+                // 05.	DAS OBRIGAÇÕES DO CLIENTE
+                // ======================================================================================= // -->
+                <span class="topico">05| DAS OBRIGAÇÕES DO CLIENTE</span>
+                <hr class="mt-0 mb-0" style="border-top: 1px solid rgb( 55, 67, 81 );" />
+
+                <div class="texto row mt-3">
+                    <div class="col-sm-12">
+                        <p><?= $DCO_OBG_CLIENTE; ?></p>
+                    </div>
+                </div><!-- /.row -->
+
+                <!-- // ====================================================================================== //
+                // 06.	DOS HONORARIOS ADVOCATICIOS
+                // ======================================================================================= // -->
+                <span class="topico">06| DOS HONORARIOS ADVOCATICIOS</span>
+                <hr class="mt-0 mb-0" style="border-top: 1px solid rgb( 55, 67, 81 );" />
+
+                <div class="texto row mt-3">
+                    <div class="col-sm-12">
+                        <p><?= $DCO_HON_ADV; ?></p>
+                    </div>
+                </div><!-- /.row -->
+
+                <!-- // ====================================================================================== //
+                // 07.	DA MULTA PELO DESCUMPRIMENTO
+                // ======================================================================================= // -->
+                <span class="topico">07| DA MULTA PELO DESCUMPRIMENTO</span>
+                <hr class="mt-0 mb-0" style="border-top: 1px solid rgb( 55, 67, 81 );" />
+
+                <div class="texto row mt-3">
+                    <div class="col-sm-12">
+                        <p><?= $DCO_MULTA_DESC; ?></p>
+                    </div>
+                </div><!-- /.row -->
+
+                <!-- // ====================================================================================== //
+                // 08.	DO PEDIDO DE DESISTÊNCIA PELO “CLIENTE”
+                // ======================================================================================= // -->
+                <span class="topico">08| DO PEDIDO DE DESISTÊNCIA PELO "CLIENTE"</span>
+                <hr class="mt-0 mb-0" style="border-top: 1px solid rgb( 55, 67, 81 );" />
+
+                <div class="texto row mt-3">
+                    <div class="col-sm-12">
+                        <p><?= $DCO_DESISTENCIA; ?></p>
+                    </div>
+                </div><!-- /.row -->
+
+                <!-- // ====================================================================================== //
+                // 09. DA ACORDO REALIZADO PELO “CLIENTE”
+                // ======================================================================================= // -->
+                <span class="topico">09| DA ACORDO REALIZADO PELO “CLIENTE”</span>
+                <hr class="mt-0 mb-0" style="border-top: 1px solid rgb( 55, 67, 81 );" />
+
+                <div class="texto row mt-3">
+                    <div class="col-sm-12">
+                        <p><?= $DCO_ACORDO; ?></p>
+                    </div>
+                </div><!-- /.row -->
+
+                <!-- // ====================================================================================== //
+                // 10. DOS MEIOS DE COMUNICAÇÕES
+                // ======================================================================================= // -->
+                <span class="topico">10| DOS MEIOS DE COMUNICAÇÕES</span>
+                <hr class="mt-0 mb-0" style="border-top: 1px solid rgb( 55, 67, 81 );" />
+
+                <div class="texto row mt-3">
+                    <div class="col-sm-12">
+                        <p><?= $DCO_COMUNICACOES; ?></p>
+                    </div>
+                </div><!-- /.row -->
+
+                <!-- // ====================================================================================== //
+                // 11. DO TRATAMENTO DOS DADOS
+                // ======================================================================================= // -->
+                <span class="topico">11| DO TRATAMENTO DOS DADOS</span>
+                <hr class="mt-0 mb-0" style="border-top: 1px solid rgb( 55, 67, 81 );" />
+
+                <div class="texto row mt-3">
+                    <div class="col-sm-12">
+                        <p><?= $DCO_DADOS; ?></p>
+                    </div>
+                </div><!-- /.row -->
+
+                <!-- // ====================================================================================== //
+                // 12. DA REPRESENTAÇÃO
+                // ======================================================================================= // -->
+                <span class="topico">12| DA REPRESENTAÇÃO</span>
+                <hr class="mt-0 mb-0" style="border-top: 1px solid rgb( 55, 67, 81 );" />
+
+                <div class="texto row mt-3">
+                    <div class="col-sm-12">
+                        <p><?= $DCO_REPRESENTACAO; ?></p>
+                    </div>
+                </div><!-- /.row -->
+
+                <!-- // ====================================================================================== //
+                // 13. DA COBRANCA JUDICIAL
+                // ======================================================================================= // -->
+                <span class="topico">13| DA COBRANCA JUDICIAL</span>
+                <hr class="mt-0 mb-0" style="border-top: 1px solid rgb( 55, 67, 81 );" />
+
+                <div class="texto row mt-3">
+                    <div class="col-sm-12">
+                        <p><?= $DCO_COBRANCA; ?></p>
+                    </div>
+                </div><!-- /.row -->
+
+                <!-- // ====================================================================================== //
+                // 14. DO PROTESTO DA DÍVIDA
+                // ======================================================================================= // -->
+                <span class="topico">14| DO PROTESTO DA DÍVIDA</span>
+                <hr class="mt-0 mb-0" style="border-top: 1px solid rgb( 55, 67, 81 );" />
+
+                <div class="texto row mt-3">
+                    <div class="col-sm-12">
+                        <p><?= $DCO_PROTESTO; ?></p>
+                    </div>
+                </div><!-- /.row -->
+
+                <!-- // ====================================================================================== //
+                // 15. DA PENHORA DE VERBA SALARIAL
+                // ======================================================================================= // -->
+                <span class="topico">15| DA PENHORA DE VERBA SALARIAL</span>
+                <hr class="mt-0 mb-0" style="border-top: 1px solid rgb( 55, 67, 81 );" />
+
+                <div class="texto row mt-3">
+                    <div class="col-sm-12">
+                        <p><?= $DCO_PENHORA; ?></p>
+                    </div>
+                </div><!-- /.row -->
+
+                <!-- // ====================================================================================== //
+                // 16. DA OBRIGACAO DOS SUCESSORES
+                // ======================================================================================= // -->
+                <span class="topico">16| DA OBRIGACAO DOS SUCESSORES</span>
+                <hr class="mt-0 mb-0" style="border-top: 1px solid rgb( 55, 67, 81 );" />
+
+                <div class="texto row mt-3">
+                    <div class="col-sm-12">
+                        <p>O presente Contrato obriga herdeiros e sucessores.</p>
+                    </div>
+                </div><!-- /.row -->
+
+                <!-- // ====================================================================================== //
+                // 17. DO FORO
+                // ======================================================================================= // -->
+                <span class="topico">17| DO FORO</span>
+                <hr class="mt-0 mb-0" style="border-top: 1px solid rgb( 55, 67, 81 );" />
+
+                <div class="texto row mt-3">
+                    <div class="col-sm-12">
+                        <p>
+                            Fica eleito o foro da Comarca de <?= $R[ 'CLI_CITY' ]; ?>/<?= $R[ 'CLI_STATE' ]; ?>., com renúncia de qualquer outro por mais privilegiado que seja para dirimir quaisquer dúvidas porventura emergentes neste Contrato.
+                        </p>
+                    </div>
+                </div><!-- /.row -->
+
+                <!-- // ====================================================================================== //
+                // 18. ENCERRAMENTO
+                // ======================================================================================= // -->
+                <div class="texto row mt-3">
+                    <div class="col-sm-12">
+                        <p>
+                            E, por estarem de pleno acordo, assinam este instrumento, em 02 (duas) vias de igual teor e forma, dando por declaradas as cláusulas precisas em direito, ficando sem efeitos as cláusulas não escritas, diante das testemunhas instrumentárias de tudo ciente.
+                        </p>
+                    </div>
+                </div>
+
+                <!-- // ====================================================================================== //
+                // 19. DATA
+                // ======================================================================================= // -->
+                <div class="data mt-3 mb-3">
+                    <span>
+                        <?= ucwords( strtolower( $CLIENT_CITY ) ); ?>, <?= date( 'd' ); ?> de
+                        <?= strtolower( mostraMes( date( 'm' ) ) ); ?> de
+                        <?= date( 'Y' ); ?>.
+                    </span>
+                </div>
+
+                <!-- // ====================================================================================== //
+                // 20. ASSINATURAS
+                // ======================================================================================= // -->
+                <!-- CLIENTE -->
+                <span class="topico">CLIENTE</span>
+
+                <div class="assinatura mt-5 mb-3">
+                    <span style="font-weight: 700;"><?= $DADOS[ 'CLI_NOME' ]; ?></span>
+                </div>
+
+                <!-- ADVOGADO(S) -->
+                <span class="topico">ADVOGADO(S)</span>
+
+                <div class="container">
+                    <div class="texto row mt-5">
+                        <?php
+                            if( isset( $_POST[ 'ADV_ADVOGADOS' ] ) ) {
+
+                                foreach( $ADV_ADVOGADOS as $ID_FORM ) {
+                                $QR = mysqli_query( $CONN, "SELECT ADV.*, UFE.UFE_SIGLA, EST.EST_NOME
+                                                                FROM ADV_ADVOGADOS ADV
+                                                                JOIN EST_CIVIL EST ON EST.EST_ID = ADV.ADV_FK_EST_CIVIL
+                                                                JOIN UFE_ESTADOS UFE ON UFE_ID = ADV.ADV_FK_OAB_UF AND ADV_FK_UF
+                                                            WHERE ADV.ADV_ID = '$ID_FORM' " );
+
+                                $QR1 = mysqli_fetch_array( $QR );
+
+                                if( !empty( $QR1[ 'ADV_SOCIEDADE' ] ) ) {
+                        ?>
+                                    <div class="col-sm-5" style="border-top: 1px dashed rgb( 0, 0, 0 ); color: rgb( 0, 0, 0 );">
+                                        <?php if( !empty( $QR1[ 'ADV_SOCIEDADE' ] ) ) { echo '<span style="font-weight: 700;">' . $QR1[ 'ADV_SOCIEDADE' ] . '</span>'; } else { echo ''; } ?><br />
+                                        <?php if( !empty( $QR1[ 'ADV_CNPJ' ] ) ) { echo 'CNPJ sob o nº ' . mask( $QR1[ 'ADV_CNPJ' ], '##.###.###/####-##' ) . ''; } else { echo ''; } ?><br />
+                                        <?php if( !empty( $QR1[ 'ADV_NOME' ] ) ) { echo 'representado/a por <span style="font-weight: 700;">' . $QR1[ 'ADV_NOME' ] . '</span>'; } else { echo ''; } ?><br />
+                                        <?php if( !empty( $QR1[ 'UFE_SIGLA' ] ) ) { echo 'OAB/' . $QR1[ 'UFE_SIGLA' ] . ''; } else { echo ''; } ?>
+                                        <?php if( !empty( $QR1[ 'ADV_NR_OAB' ] ) ) { echo ' nº ' . $QR1[ 'ADV_NR_OAB' ] . '&nbsp;'; } else { echo ''; } ?>
+                                    </div>
+                                    <div class="col-sm-2"></div>
+                        <?php } else { ?>
+                                    <div class="col-sm-5" style="border-top: 1px dashed rgb( 0, 0, 0 ); color: rgb( 0, 0, 0 );">
+                                        <?php if( !empty( $QR1[ 'ADV_NOME' ] ) ) { echo '<span style="font-weight: 700;">' . $QR1[ 'ADV_NOME' ] . '</span>'; } else { echo ''; } ?><br />
+                                        <?php if( !empty( $QR1[ 'UFE_SIGLA' ] ) ) { echo 'OAB/' . $QR1[ 'UFE_SIGLA' ]; } else { echo ''; } ?>
+                                        <?php if( !empty( $QR1[ 'ADV_NR_OAB' ] ) ) { echo ' nº ' . $QR1[ 'ADV_NR_OAB' ] . ''; } else { echo ''; } ?>
+                                    </div>
+                            <?php }
+                                }
+                            }
+                        ?>
+                    </div>
+                </div>
+
+                <!-- TESTEMUNHAS -->
+                <span class="topico">TESTEMUNHAS</span>
+
+                <div class="container">
+                    <div class="row mt-5">
+                        <div class="col-sm-5" style="border-top: 1px dashed rgb( 0, 0, 0 ); color: rgb( 0, 0, 0 );">
+                            <span style="font-weight: 700;">Nome:</span><br />
+                            <span style="font-weight: 700;">CPF:</span>
+                        </div>
+                        <div class="col-sm-2"></div>
+                        <div class="col-sm-5" style="border-top: 1px dashed rgb( 0, 0, 0 ); color: rgb( 0, 0, 0 );">
+                            <span style="font-weight: 700;">Nome:</span><br />
+                            <span style="font-weight: 700;">CPF:</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- // ====================================================================================== //
+                // 20. RODAPE
+                // ======================================================================================= // -->
+                <div class="mt-3">
+                    <?php require_once(__DIR__ . '/../footerSys.php'); ?>
+                </div>
+
+            </div><!-- /.End Container-fluid -->
+
+        </div><!-- /.Invoice -->
+        <!--// FIM DO DOCUMENTO //-->
+
+    </section><!-- /.End Section -->
+
+</div><!-- /.End Content-wrapper -->
+
+<?php
+    mysqli_close( $CONN );
+    mysqli_close( $CONN1 );
+?>
+<script language="javascript">document.addEventListener("DOMContentLoaded", function(){ downloadPDF(); } );</script>
+<?= "<script language=\"javascript\">setTimeout(function () { window.location.href = '?pg=clients/clien_view&id=$ID'; }, 1000);</script>"; ?>
+<!-- FIM GERANDO PDF ======================================================-->

@@ -1,0 +1,148 @@
+<?php
+  if( !isset( $_SESSION ) ) session_start();
+  $required_level = 1;
+  require_once(__DIR__ . '/../access/level.php');
+  require_once(__DIR__ . '/../access/conn.php');
+  require_once(__DIR__ . '/../config.php');
+  require_once(__DIR__ . '/../dist/func/functions.php');
+
+  // ======================================================================================= //
+  // RECEBENDO DADOS VIA POST
+  // ======================================================================================= //
+  if( ( $_SERVER[ "REQUEST_METHOD" ] == "POST" ) && ( isset( $_POST[ 'ACTION' ] ) ) && ( $_POST[ 'ACTION' ] == 'DECLARACAO' ) ) {
+    $ID = $_POST[ 'ID' ];
+    $DDE_DECLARACAO = $_POST[ 'DDE_DECLARACAO' ];
+
+    mysqli_query( $CONN, " UPDATE DOC_DECLARACAO SET DDE_DECLARACAO = '$DDE_DECLARACAO' " );
+    echo mysqli_error( $CONN );
+
+    $SQL = mysqli_query( $CONN, " SELECT C.*, P.PAS_ID, P.PAS_NOME
+                                    FROM CLI_CLIENTES C
+                                    JOIN STA_STATUS S ON C.CLI_FK_STATUS = S.STA_ID
+                                    JOIN PAS_PROC_PASTA P ON C.CLI_FK_PASTA = P.PAS_ID
+                                   WHERE C.CLI_ID = '$ID'
+                                ORDER BY C.CLI_ID DESC " );
+    $DADOS = mysqli_fetch_array( $SQL );
+  }
+?>
+
+<!-- Content Wrapper. Contains page content -->
+<div class="content-wrapper" style="background-color: rgb( 255, 255, 255 );"><!-- Content Header (Page header) -->
+
+	<!-- Main content -->
+	<section class="content" style="background-color: rgb( 255, 255, 255 );">
+		<div class="container-fluid" style="background-color: rgb( 255, 255, 255 );">
+
+      <!--// INÍCIO DO DOCUMENTO //-->
+      <!-- Invoice -->
+      <div class="invoice p-3 mt-3 mb-3" style="background-color: rgb( 255, 255, 255 );">
+
+        <div class="PDF container-fluid" style="background-color: rgb( 255, 255, 255 );">
+
+          <?php
+            $SQL = mysqli_query( $CONN1, " SELECT C.* FROM SYS_USERS U JOIN SYS_CLIENTS C ON C.CLI_ID = U.USR_FK_CLIENT WHERE U.USR_ID = '$USERS' ");
+            $R = mysqli_fetch_array( $SQL );
+            $CLIENT_CITY = $R[ 'CLI_CITY' ];
+            if( empty( $R[ 'CLI_LOGO' ] ) ) {
+              $LOGO = 'dist/img/logo/logo.png';
+            } else {
+              $LOGO = 'dist/img/logo/' . $R[ 'CLI_LOGO' ] . '';
+            }
+          ?>
+
+          <div class="row">
+            <div class="col-sm-3" align="center">
+              <span><img class="img-circle" src="<?= $LOGO; ?>" style="width: 150px; heigth: 150px;"/></span>
+            </div>
+            <div class="col justify-content-left align-items-left" style="text-align: left;">
+              <span style="line-height: 1.0rem; color: rgb( 0, 0, 0 ); font-size: 1.2em; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase;"><?= $R[ 'CLI_OFFICE' ]; ?></span><br />
+              <span style="line-height: 1.0rem; color: rgb( 0, 0, 0 ); font-size: 1.0em; font-weight: 500; letter-spacing: 0.1em; text-transform: uppercase;"><i class="fas fa-map-marker"></i>&nbsp;<?= $R[ 'CLI_ADDRESS' ]; ?>, <?= $R[ 'CLI_NUMBER' ]; ?> - <?= $R[ 'CLI_NEIGHBORHOOD' ]; ?></span><br />
+              <span style="line-height: 1.0rem; color: rgb( 0, 0, 0 ); font-size: 1.0em; font-weight: 500; letter-spacing: 0.1em; text-transform: uppercase;"><i class="fas fa-map"></i>&nbsp;<?= $R[ 'CLI_CITY' ]; ?>/<?= $R[ 'CLI_STATE' ]; ?></span><br />
+              <span style="line-height: 1.0rem; color: rgb( 0, 0, 0 ); font-size: 1.0em; font-weight: 500; letter-spacing: 0.1em; text-transform: uppercase;"><i class="fas fa-envelope"></i>&nbsp;<?php if( !empty( $R[ 'CLI_ZIPCODE' ] ) ) { echo mask( $R[ 'CLI_ZIPCODE' ], '##.###-###' ); } else { echo ''; }  ?></span><br />
+              <span style="line-height: 1.0rem; color: rgb( 0, 0, 0 ); font-size: 1.0em; font-weight: 500; letter-spacing: 0.1em; text-transform: uppercase;"><i class="fas fa-phone"></i>&nbsp;<?php if( !empty( $R[ 'CLI_PHONE' ] ) ) { echo mask( $R[ 'CLI_PHONE' ], '## | #####-####' ); } else { echo ''; }  ?> - <i class="fas fa-mobile"></i>&nbsp;<?php if( !empty( $R[ 'CLI_CELLPHONE' ] ) ) { echo mask( $R[ 'CLI_CELLPHONE' ], '## | #####-####' ); } else { echo ''; }  ?></span><br />
+              <span style="line-height: 1.0rem; color: rgb( 0, 0, 0 ); font-size: 1.0em; font-weight: 500; letter-spacing: 0.1em; text-transform: uppercase;"><i class="fas fa-globe"></i>&nbsp;<?php if( !empty( $R[ 'CLI_SITE' ] ) ) { echo $R[ 'CLI_SITE' ]; } else { echo ''; }  ?> - <i class="fas fa-envelope"></i>&nbsp;<?php if( !empty( $R[ 'CLI_EMAIL' ] ) ) { echo $R[ 'CLI_EMAIL' ]; } else { echo ''; }  ?></span>
+            </div>
+          </div>
+
+          <hr style="border-top: 1px solid rgb( 55, 67, 81 );" />
+
+          <!--// TÍTULO DO DOCUMENTO //-->
+          <div class="mt-2 mb-2" style="text-align: center;">
+            <legend style="font-size: 1.2em; letter-spacing: 0.1em; line-height: 1.0em; color: rgb( 0, 0, 0 ); font-weight: 700; text-align: center; text-transform: uppercase;">
+              DECLARAÇÃO DE HIPOSSUFICIÊNCIA
+            </legend>
+          </div>
+
+          <br />
+
+          <!--// LAYOUT DO DOCUMENTO //-->
+          <div class="">
+
+            <!--// 1. DECLARAÇÃO //-->
+            <div class="row" style="justify-content: justify; align-items: justify; vertical-align: middle; text-align: justify;">
+              <div class="col-sm-12">
+                <p style="font-size: 1.0em; letter-spacing: 0.1em; background-color: rgb( 255, 255, 255 ); color: rgb( 0, 0, 0 );">
+                  Eu, <span style="font-weight: 700;"><?= $DADOS[ 'CLI_NOME' ]; ?></span>,
+                  <?php if( !empty( $DADOS[ 'CLI_NACIONALIDADE' ] ) && $DADOS[ 'CLI_NACIONALIDADE' ] != '' ) { echo strtolower( $DADOS[ 'CLI_NACIONALIDADE' ] ) . ','; } else { echo ''; } ?>
+                  <?php if( !empty( $DADOS[ 'CLI_PROFISSAO' ] ) && $DADOS[ 'CLI_PROFISSAO' ] != '' ) { echo strtolower( $DADOS[ 'CLI_PROFISSAO' ] ) . ','; } else { echo ''; } ?>
+                  <?php if( !empty( $DADOS[ 'CLI_EST_CIVIL' ] ) && $DADOS[ 'CLI_EST_CIVIL' ] != 'SELECIONE...' ) { echo strtolower( $DADOS[ 'CLI_EST_CIVIL' ] ) . ',';  } else { echo ''; } ?>
+                  inscrito/a
+                  <?php
+                    if( !empty( $DADOS[ 'CLI_ORG_EMISSOR' ] ) && !empty( $DADOS[ 'CLI_RG' ] ) ) {
+                      echo 'na Cédula de Identidade RG/'.$DADOS[ 'CLI_ORG_EMISSOR' ].', sob o nº '.mask( $DADOS[ 'CLI_RG' ], '##.###.###-#' ).', e ';
+                    } elseif( empty( $DADOS[ 'CLI_ORG_EMISSOR' ] ) && !empty( $DADOS[ 'CLI_RG' ] ) ) {
+                      echo 'na Cédula de Identidade RG sob o nº '.mask( $DADOS[ 'CLI_RG' ], '##.###.###-#' ).', e ';
+                    } else {
+                      echo '';
+                    }
+                  ?>
+                  no CPF/MF sob o nº <?php $CLI_CPF = $DADOS[ 'CLI_CPF' ]; echo mask( $CLI_CPF, '###.###.###-##' ); ?>,
+                  <?php if( !empty( $DADOS[ 'CLI_EMAIL' ] ) ) { echo 'e-mail: ' . $DADOS[ 'CLI_EMAIL' ] . ',';  } else { echo 'e-mail: não informado, '; } ?>
+                  residente e domiciliado/a <?php if( !empty( $DADOS[ 'CLI_ENDERECO' ] ) ) { echo 'na ' . $DADOS[ 'CLI_ENDERECO' ] . ',';  } else { echo 'na <b>não informado, </b>'; } ?>
+                  <?php if( !empty( $DADOS[ 'CLI_NUMERO' ] ) ) { echo 'nº ' . $DADOS[ 'CLI_NUMERO' ] . ',';  } else { echo 'nº <b>não informado, </b>'; } ?>
+                  <?php if( !empty( $DADOS[ 'CLI_COMPLEMENTO' ] ) ) { echo $DADOS[ 'CLI_COMPLEMENTO' ] . ',';  } else { echo ''; } ?>
+                  <?php if( !empty( $DADOS[ 'CLI_BAIRRO' ] ) ) { echo $DADOS[ 'CLI_BAIRRO' ] . ',';  } else { echo ''; } ?>
+                  <?php if( !empty( $DADOS[ 'CLI_CEP' ] ) ) { echo 'CEP nº ' . mask( $DADOS[ 'CLI_CEP' ], '##.###-###' ) . ',';  } else { echo ''; } ?>
+                  na cidade de <?= $DADOS[ 'CLI_CIDADE' ]; ?>/<?= $DADOS[ 'CLI_UF' ]; ?>.
+                </p>
+
+                <p style="font-size: 1.0em; letter-spacing: 0.1em; background-color: rgb( 255, 255, 255 ); color: rgb( 0, 0, 0 );">
+                  <?= $DDE_DECLARACAO; ?>
+                </p>
+              </div>
+            </div>
+
+            <!--// 2. DATA //-->
+            <div style="font-size: 1.0em; letter-spacing: 0.1em; background-color: rgb( 255, 255, 255 ); color: rgb( 0, 0, 0 );">
+              <span style="font-weight: light;"><?= ucwords( strtolower( $CLIENT_CITY ) ); ?>, <?= date( 'd' ); ?> de <?= strtolower( mostraMes( date( 'm' ) ) ); ?> de <?= date( 'Y' ); ?>.</span>
+              <br /><br /><br />
+              <div class="float-left d-none d-sm-inline-block col-sm-6" style="border-top: 1px dashed rgb( 55, 67, 81 );">
+                <span style="font-weight: 700;">&nbsp;<?= $DADOS[ 'CLI_NOME' ]; ?></span>
+              </div>
+            </div>
+
+
+            <br /><br /><br />
+            <!--// 3. RODAPE //-->
+            <?php require_once(__DIR__ . '/../footerSys.php'); ?>
+
+          </div>
+
+        </div><!-- /.container-fluid -->
+
+      </div><!-- /.Invoice -->
+
+      <!--// FIM DO DOCUMENTO //-->
+
+    </div><!-- /.End Container-fluid -->
+  </section><!-- /.End Section -->
+
+</div><!-- /.End Content-wrapper -->
+
+<?php
+  mysqli_close( $CONN );
+  mysqli_close( $CONN1 );
+?>
+<script language="javascript">document.addEventListener("DOMContentLoaded", function(){ downloadPDF(); } );</script>
+<?= "<script language=\"javascript\">setTimeout(function () { window.location.href = '?pg=clients/clien_view&id=$ID'; }, 1000);</script>"; ?>
+<!-- FIM GERANDO PDF ======================================================-->

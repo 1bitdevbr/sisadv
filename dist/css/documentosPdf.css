@@ -1,0 +1,81 @@
+/* GERAL /*---------------------------------------------*/
+.background {
+    margin: 5px;
+    background-color: rgb( 255, 255, 255 );
+}
+
+.contratobg {
+    margin-right: 10px;
+    background-color: rgb( 255, 255, 255 );
+}
+
+/* LOGOTIPO /*---------------------------------------------*/
+.logoCabecalho {
+    max-width: 150px;
+    max-height: 150px;
+    width: auto;
+    height: auto;
+    /* justify-content: justify;
+    align-items: justify;
+    vertical-align: middle; */
+}
+
+/* CABEÇALHO /*---------------------------------------------*/
+.cabecalho span {
+    font-size: 0.8em;
+    font-weight: 600;
+    color: rgb( 0, 0, 0 );
+    line-height: 1.0rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    text-align: left;
+}
+
+.cabecalho .titulo {
+	font-size: 1.0em;
+    font-weight: 700;
+}
+
+.cabecalho .network {
+    text-transform: lowercase;
+}
+
+/* CONTEÚDO /*---------------------------------------------*/
+.texto {
+    font-size: 0.8em;
+    letter-spacing: 0.1em;
+    color: rgb( 0, 0, 0 );
+    background-color: rgb( 255, 255, 255 );
+    justify-content: justify;
+    align-items: justify;
+    vertical-align: middle;
+    text-align: justify;
+}
+
+/* TÓPICOS /*---------------------------------------------*/
+.topico {
+    font-size: 0.9em;
+    letter-spacing: 0.1em;
+    color: rgb( 0, 0, 0 );
+    font-weight: 700;
+    text-align: left;
+    text-transform: uppercase;
+}
+
+/* DATA /*---------------------------------------------*/
+.data {
+    font-size: 0.8em;
+    letter-spacing: 0.1em;
+    color: rgb( 0, 0, 0 );
+    background-color: rgb( 255, 255, 255 );
+}
+
+/* ASSINATURA /*---------------------------------------------*/
+.assinatura span {
+    font-size: 0.8em;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    color: rgb( 0, 0, 0 );
+    background-color: rgb( 255, 255, 255 );
+    border-top: 1px dashed rgb( 55, 67, 81 );
+}

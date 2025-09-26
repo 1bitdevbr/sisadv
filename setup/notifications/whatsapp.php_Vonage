@@ -1,0 +1,113 @@
+<?php
+// Inicia a sessão
+if (!isset($_SESSION)) session_start();
+
+// Verifica se o usuário está logado
+if (!isset($_SESSION['USR_ID'])) {
+    die("Usuário não está logado.");
+}
+
+// Dados do usuário logado
+$USR_ACCESS = $_SESSION['USR_ID']; // ID do usuário logado
+$USR_NAME = $_SESSION['USR_NAME']; // Nome do usuário logado
+$USR_MOBILE_PHONE = $_SESSION['USR_MOBILE_PHONE']; // Número de telefone do usuário logado
+
+// Consulta os compromissos agendados para hoje e atribuídos ao usuário logado
+$data_atual = date('Y-m-d');
+$sql = "
+    SELECT
+        TAR.*,
+        PNA.*,
+        CLI.CLI_NOME,
+        SIT.*,
+        PAS.*
+    FROM
+        TAR_TAREFAS TAR
+        LEFT JOIN PNA_PROC_NATUREZA PNA ON PNA.PNA_ID = TAR.TAR_FK_NATUREZA
+        LEFT JOIN CLI_CLIENTES CLI ON CLI.CLI_ID = TAR.TAR_FK_CLIENTE
+        LEFT JOIN TAR_SITUACAO SIT ON SIT.TAR_ID_SIT = TAR.TAR_FK_SITUACAO
+        LEFT JOIN PAS_PROC_PASTA PAS ON PAS.PAS_ID = CLI.CLI_FK_PASTA
+    WHERE
+        DATE(TAR.TAR_PZ_INICIO) = :data_atual
+        AND TAR.TAR_FK_STATUS = 1
+        AND TAR.TAR_FK_SITUACAO < 3
+        AND (
+            (TAR.TAR_TIPO = 0 AND (TAR.TAR_FK_ATRIBUIDO = :usr_access OR TAR.TAR_USER_CREATION = :usr_access))
+            OR
+            TAR.TAR_TIPO = 1
+        )
+    ORDER BY
+        TAR.TAR_PZ_FIM ASC
+";
+
+$stmt = $CONN->prepare($sql);
+$stmt->bindParam(':data_atual', $data_atual);
+$stmt->bindParam(':usr_access', $USR_ACCESS);
+$stmt->execute();
+$compromissos = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+// Configurações da Vonage
+$api_key = 'ca1f8246'; // Substitua pela sua API Key da Vonage
+$api_secret = 'SUA_API_SECRET'; // Substitua pela sua API Secret da Vonage
+$vonage_number = 'SEU_NUMERO_VONAGE'; // Número de telefone da Vonage configurado para WhatsApp
+
+// Função para enviar mensagem via WhatsApp usando a API da Vonage
+function enviarWhatsApp($api_key, $api_secret, $vonage_number, $usuario_telefone, $mensagem) {
+    $url = "https://rest.nexmo.com/v0.1/messages";
+    $data = [
+        'from' => [
+            'type' => 'whatsapp',
+            'number' => $vonage_number,
+        ],
+        'to' => [
+            'type' => 'whatsapp',
+            'number' => $usuario_telefone,
+        ],
+        'message' => [
+            'content' => [
+                'type' => 'text',
+                'text' => $mensagem,
+            ],
+        ],
+    ];
+
+    $options = [
+        'http' => [
+            'header' => "Content-type: application/json\r\nAuthorization: Basic " . base64_encode("$api_key:$api_secret"),
+            'method' => 'POST',
+            'content' => json_encode($data),
+        ],
+    ];
+
+    $context = stream_context_create($options);
+    $response = file_get_contents($url, false, $context);
+
+    return $response;
+}
+
+// Envia notificações via WhatsApp
+foreach ($compromissos as $compromisso) {
+    $descricao = $compromisso['TAR_DESCRICAO'];
+    $data_hora = date('d/m/Y H:i', strtotime($compromisso['TAR_PZ_INICIO']));
+
+    // Mensagem a ser enviada
+    $mensagem = "Olá, $USR_NAME! Você tem um compromisso agendado para $data_hora. Descrição: $descricao.";
+
+    try {
+        // Envia a mensagem via WhatsApp
+        $response = enviarWhatsApp($api_key, $api_secret, $vonage_number, $USR_MOBILE_PHONE, $mensagem);
+
+        // Verifica se a mensagem foi enviada com sucesso
+        $response_data = json_decode($response, true);
+        if (isset($response_data['message_uuid'])) {
+            echo "WhatsApp enviado para $USR_NAME ($USR_MOBILE_PHONE): $mensagem<br>";
+        } else {
+            echo "Erro ao enviar WhatsApp para $USR_NAME ($USR_MOBILE_PHONE): " . json_encode($response_data) . "<br>";
+        }
+    } catch (Exception $e) {
+        echo "Erro ao enviar WhatsApp para $USR_NAME ($USR_MOBILE_PHONE): " . $e->getMessage() . "<br>";
+    }
+}
+
+// Fecha a conexão com o banco de dados
+$CONN = null;

@@ -1,0 +1,1 @@
+<?= "<script language=\"javascript\">setTimeout(function () { window.location.href = 'logout.php'; }, 0);</script>"; ?>
